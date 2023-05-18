@@ -18,7 +18,7 @@ Amplify.configure({
       domain: process.env.AWS_COGNITO_HOSTED_UI_DOMAIN,
 
       // These scopes must match what you set in the User Pool for this App Client
-      scope: ['email'],
+      scope: ['email', 'openid', 'phone'],
 
       // NOTE: these must match what you have specified in the Hosted UI
       // app settings for Callback and Redirect URLs (e.g., no trailing slash).
@@ -40,7 +40,7 @@ async function getUser() {
     // Get the user's info, see:
     // https://docs.amplify.aws/lib/auth/advanced/q/platform/js/#identity-pool-federation
     const currentAuthenticatedUser = await Auth.currentAuthenticatedUser();
-
+    console.log(currentAuthenticatedUser)
     // Get the user's username
     const username = currentAuthenticatedUser.username;
 
