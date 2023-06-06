@@ -6,6 +6,7 @@ async function init() {
   const userSection = document.querySelector('#user');
   const loginBtn = document.querySelector('#login');
   const logoutBtn = document.querySelector('#logout');
+  const createFragmentContainer = document.querySelector('#create-fragment-container');
 
   // Wire up event handlers to deal with login and logout.
   loginBtn.onclick = () => {
@@ -26,9 +27,18 @@ async function init() {
     logoutBtn.disabled = true;
     return;
   }
-  
   // Do an authenticated request to the fragments API server and log the result
   getUserFragments(user);
+
+  createFragmentContainer.innerHTML += `
+  <br>
+  <button id="new-fragment">Create Fragment</button>
+  `
+
+  const createFragmentBtn = document.querySelector('#new-fragment');
+  createFragmentBtn.onclick = () => {
+    window.location.href = 'create-fragment.html';
+  }
 
   // Log the user info for debugging purposes
   console.log({ user });
