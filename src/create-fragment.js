@@ -27,6 +27,7 @@ async function init() {
         .catch(err => {
             console.error(err);
         })
+        form.reset();
     })
 
     form.reset();
