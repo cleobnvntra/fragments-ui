@@ -11,8 +11,6 @@ async function init() {
         event.preventDefault();
 
         const inputValue = document.getElementById('new-fragment').value;
-        const value = JSON.stringify(inputValue);
-        console.log(inputValue);
 
         fetch(`${process.env.API_URL}/v1/fragments`, {
             method: 'POST',

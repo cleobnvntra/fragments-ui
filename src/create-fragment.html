@@ -12,8 +12,13 @@
         <label for="new-fragment">Enter fragment:</label>
         <input type="text" id="new-fragment" name="new-fragment">
         <br><br>
-        <button type="submit">Submit</button>
-        <button type="reset">Cancel</button>
+        <div class="button-container" style="display: flex; justify-content: space-between">
+          <div>
+            <button type="submit">Submit</button>
+            <button type="reset">Cancel</button>
+          </div>
+          <button type="button" onclick="window.location.href='/'">Go back</button>
+        </div>
     </form>
   </body>
 </html>
