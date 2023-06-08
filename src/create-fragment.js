@@ -7,7 +7,7 @@ async function init() {
     }
 
     const form = document.querySelector('#form');
-    form.addEventListener('submit', function(event) {
+    form.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const inputValue = document.getElementById('new-fragment').value;
