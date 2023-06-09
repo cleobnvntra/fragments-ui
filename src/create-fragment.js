@@ -20,7 +20,9 @@ async function init() {
             },
             body: inputValue
         })
-        .then(res => res.json())
+        .then(res => {
+            console.log(res.headers.get('Location'));
+            return res.json()})
         .then(data => {
             console.log(data);
         })
