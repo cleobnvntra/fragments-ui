@@ -100,8 +100,10 @@ async function init() {
               <div style="border: 2px solid;">
                 <div style="display: flex; justify-content: space-between;">
                   <h3>Fragment:</h3>
-                  <div>
+                  <div id="update-container">
                     <button type="button" id="back">Go Back</button>
+                    <button type="button" class="update-fragment" id="update-button">Edit</button>
+                    <button type="button" class="delete-fragment" id="delete-button">Del</button>
                   </div>
                 </div>
                 <ul>
@@ -116,6 +118,69 @@ async function init() {
             `;
             fragmentDisplayContainer.innerHTML = html;
 
+            //Onclick event listener for the edit button
+            //When clicked, displays a single input form for the user
+            const editBtn = document.querySelector('#update-button');
+            editBtn.onclick = () => {
+              //Trigger for removing active forms when another edit button is clicked
+    
+              const container = document.querySelector('#update-container');
+              container.innerHTML = `
+              <form id="update-form">
+                <input type="text" id="update"></input>
+                <button type="submit" style="margin: 2px">Update</button>
+                <button type="reset" style="margin: 2px">Cancel</button>
+              </form>
+              `;
+    
+              //Submit handler for the edit form
+              //The submitted input value is sent as a PUT request
+              //The route accepts a fragment id which is used to get the fragment to be updated
+              const form = document.querySelector('#update-form');
+              form.addEventListener('submit', (event) => {
+                event.preventDefault();
+    
+                const inputValue = document.querySelector('#update').value;
+    
+                //PUT request to API_URL/v1/fragments/:id
+                fetch(`${process.env.API_URL}/v1/fragments/${metadata.id}`, {
+                  method: 'PUT',
+                  headers: {
+                    'Content-Type': 'text/plain',
+                    'Authorization': `Bearer ${user.idToken}`
+                  },
+                  body: inputValue
+                })
+                .then(res => res.json())
+                .then(data => {
+                  viewFragmentIdsBtn.click();
+                  console.log(data);
+                })
+                .catch(err => {
+                  console.error(err);
+                })
+              });
+            }
+      
+            //Onclick event listener for Del button
+            //When clicked, it sends a DELETE request to the server with the id as a parameter
+            //Deletes a specific fragment based on the requested id to be deleted
+            const delBtn = document.querySelector('#delete-button');
+            delBtn.onclick = () => {
+              fetch(`${process.env.API_URL}/v1/fragments/${metadata.id}`, {
+                method: 'DELETE',
+                headers: user.authorizationHeaders()
+              })
+              .then(res => res.json())
+              .then(data => {
+                viewFragmentIdsBtn.click();
+                console.log(data);
+              })
+              .catch(err => {
+                console.error(err);
+              })
+            }
+            
             const backBtn = document.querySelector('#back');
             backBtn.onclick = () => {
               viewFragmentIdsBtn.click();
@@ -128,7 +193,7 @@ async function init() {
       });
     })
     .catch(err => {
-      console.log(err);
+      console.error(err);
     })
   }
 
@@ -143,17 +208,22 @@ async function init() {
     .then(res => res.json())
     .then(data => {
       const fragments = data.fragments;
-      console.log(fragments);
 
       let html = ``;
+      if (fragments.length == 0) {
+        html = `
+          <div style="border: 1px solid">
+            <h1>Fragment list is empty. . .</h1>
+          </div>
+        `;
+      }
       fragments.forEach(fragment => {
         html += `
           <div style="border: 2px solid;">
             <div style="display: flex; justify-content: space-between;">
               <h3>Fragment:</h3>
-              <div id="update-container-${fragment.id}">
-                <button type="button" class="update-fragment" id="update-${fragment.id}">Edit</button>
-                <button type="button" class="delete-fragment" id="delete-${fragment.id}">Del</button>
+              <div id="delete-container-${fragment.id}">
+                <button type="button" id="del-${fragment.id}">Del</button>
               </div>
             </div>
             <ul>
@@ -169,61 +239,11 @@ async function init() {
       })
       fragmentDisplayContainer.innerHTML = html;
 
-      let activeForm;
       fragments.forEach(fragment => {
-        //Onclick event listener for the edit button
-        //When clicked, displays a single input form for the user
-        const editBtn = document.getElementById(`update-${fragment.id}`);
-        editBtn.onclick = () => {
-          //Trigger for removing active forms when another edit button is clicked
-          if (activeForm) {
-            activeForm.remove();
-          }
-
-          const container = document.querySelector(`#update-container-${fragment.id}`);
-          container.innerHTML = `
-          <form id="update-form-${fragment.id}">
-            <input type="text" id="update"></input>
-            <button type="submit" style="margin: 2px">Update</button>
-            <button type="reset" style="margin: 2px">Cancel</button>
-          </form>
-          `;
-
-          //Submit handler for the edit form
-          //The submitted input value is sent as a PUT request
-          //The route accepts a fragment id which is used to get the fragment to be updated
-          const form = document.querySelector(`#update-form-${fragment.id}`);
-          form.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            const inputValue = document.querySelector('#update').value;
-
-            //PUT request to API_URL/v1/fragments/:id
-            fetch(`${process.env.API_URL}/v1/fragments/${fragment.id}`, {
-              method: 'PUT',
-              headers: {
-                'Content-Type': 'text/plain',
-                'Authorization': `Bearer ${user.idToken}`
-              },
-              body: inputValue
-            })
-            .then(res => res.json())
-            .then(data => {
-              viewFragmentsBtn.click();
-              console.log(data);
-            })
-            .catch(err => {
-              console.log(err);
-            })
-          });
-          container.appendChild(form);
-          activeForm = form;
-        }
-
         //Onclick event listener for Del button
         //When clicked, it sends a DELETE request to the server with the id as a parameter
         //Deletes a specific fragment based on the requested id to be deleted
-        const delBtn = document.querySelector(`#delete-${fragment.id}`);
+        const delBtn = document.querySelector(`#del-${fragment.id}`);
         delBtn.onclick = () => {
           fetch(`${process.env.API_URL}/v1/fragments/${fragment.id}`, {
             method: 'DELETE',
@@ -241,7 +261,7 @@ async function init() {
       })
     })
     .catch(err => {
-      console.log(err);
+      console.error(err);
     })
   }
 
@@ -254,7 +274,8 @@ async function init() {
       <label for="search">Enter fragment ID to search:</label>
         <input type="text" id="search-id"></input><br><br>
         <button type="submit">Search</button>
-        <button type="reset">Clear</button>
+        <button type="reset" id="clear-button">Clear</button>
+        <strong><span style="color: red" id="err-msg"></span></strong>
       </form>
     `;
 
@@ -270,20 +291,27 @@ async function init() {
       fetch(`${process.env.API_URL}/v1/fragments/${inputValue}`, {
         headers: user.authorizationHeaders()
       })
-      .then(res => res.json())
-      .then(data => {
-        if(!data.error.message) {
-          fragmentDisplayContainer.innerHTML = `
-            <div style="border: 2px solid;">
+      .then(async data => {
+        const text = await data.text();
+        console.log(data)
+        if(data.ok) {
+        fragmentDisplayContainer.innerHTML = `
+          <div style="border: 2px solid;">
             <div style="display: flex; justify-content: space-between;">
               <h3>Fragment found:</h3>
             </div>
             <ul>
-              <li>type: ${data.type}</li>
-              <li>size: ${data.size}</li>
-              <li>data: ${data.data}</li>
+              <li>type: ${data.headers.get('Content-Type')}</li>
+              <li>size: ${data.headers.get('Content-Length')}</li>
+              <li>data: ${text}</li>
             </ul>
           </div>
+          `;
+        }
+        else {
+          const label = document.querySelector('#err-msg');
+          label.innerHTML = `
+            Fragment ID: ${inputValue} ${data.statusText}
           `;
         }
       })
@@ -293,8 +321,6 @@ async function init() {
       form.reset();
     })
   }
-
-
 
   // Log the user info for debugging purposes
   console.log({ user });
