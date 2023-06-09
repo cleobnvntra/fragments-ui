@@ -291,6 +291,10 @@ async function init() {
       fetch(`${process.env.API_URL}/v1/fragments/${inputValue}`, {
         headers: user.authorizationHeaders()
       })
+      .then(res => {
+        console.log(res.headers.get('Location'));
+        return res;
+      })
       .then(async data => {
         const text = await data.text();
         console.log(data)
