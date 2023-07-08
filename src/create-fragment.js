@@ -6,19 +6,27 @@ async function init() {
         window.location.href='/';
     }
 
-    const form = document.querySelector('#form');
+    const cancelBtn = document.querySelector("#cancel-btn");
+    cancelBtn.onclick = () => {
+        window.location.href='/';
+    }
+
+    const form = document.querySelector("#form")
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const inputValue = document.getElementById('new-fragment').value;
+        const input = document.querySelector("#new-fragment").value;
+        const contentType = document.querySelector("#content-type").value;
+        console.log(contentType)
 
         fetch(`${process.env.API_URL}/v1/fragments`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'text/plain',
+                'Content-Type': contentType,
                 'Authorization': `Bearer ${user.idToken}`
             },
-            body: inputValue
+            body: input
         })
         .then(res => {
             console.log(res.headers.get('Location'));

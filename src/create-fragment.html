@@ -8,17 +8,30 @@
   </head>
   <body>
     <h1>Create a new fragment</h1>
-    <form id="form">
-        <label for="new-fragment">Enter fragment:</label>
+    <div id="form-field">
+      <form id="form">
+        <label for="content-type">Content Type:</label>
+          <select id="content-type">
+            <option value="text/plain" default>text/plain</option>
+            <option value="text/markdown">text/markdown</option>
+            <option value="text/html">text/html</option>
+            <option value="application/json">application/json</option>
+            <!-- <option value="image/png">image/png</option>
+            <option value="image/jpeg">image/jpeg</option>
+            <option value="image/webp">image/webp</option>
+            <option value="image/gif">image/gif</option> -->
+          </select><br><br>
+        <label for="new-fragment">Enter text:</label>
         <input type="text" id="new-fragment" name="new-fragment">
         <br><br>
         <div class="button-container" style="display: flex; justify-content: space-between">
           <div>
-            <button type="submit">Submit</button>
-            <button type="reset">Cancel</button>
+              <button type="submit">Submit</button>
+              <button type="reset">Clear</button>
           </div>
-          <button type="button" onclick="window.location.href='/'">Go back</button>
+          <button type="button" id="cancel-btn">Cancel</button>
         </div>
-    </form>
+      </form>
+    </div>
   </body>
 </html>

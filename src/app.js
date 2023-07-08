@@ -1,5 +1,5 @@
 import { Auth, getUser } from "./auth";
-import { getUserFragments } from './api';
+import { getUserFragments, createFragments } from './api';
 
 async function init() {
   // Get our UI elements
@@ -35,13 +35,13 @@ async function init() {
   <button type="button" id="new-fragment">Create Fragment</button>
   <button type="button" id="fragment-id">Fragment Ids</button>
   <button type="button" id="fragment-expanded">Full Fragments</button>
-  <button type="button" id="fragment-search">Find Fragment</button>
   <br>
   `
 
   const createFragmentBtn = document.querySelector('#new-fragment');
-  createFragmentBtn.onclick = () => {
+  createFragmentBtn.onclick = async () => {
     window.location.href = 'create-fragment.html';
+    await createFragments();
   }
 
   //Button element for Fragment Ids button
@@ -208,6 +208,7 @@ async function init() {
     .then(res => res.json())
     .then(data => {
       const fragments = data.fragments;
+      console.log(fragments);
 
       let html = ``;
       if (fragments.length == 0) {
@@ -262,67 +263,6 @@ async function init() {
     })
     .catch(err => {
       console.error(err);
-    })
-  }
-
-  //On click event listener for Find Fragment button
-  //When clicked, displays an input form for the user to search for a fragment by Id
-  const findFragmentBtn = document.querySelector('#fragment-search');
-  findFragmentBtn.onclick = () => {
-    fragmentDisplayContainer.innerHTML = `
-      <form id="form">
-      <label for="search">Enter fragment ID to search:</label>
-        <input type="text" id="search-id"></input><br><br>
-        <button type="submit">Search</button>
-        <button type="reset" id="clear-button">Clear</button>
-        <strong><span style="color: red" id="err-msg"></span></strong>
-      </form>
-    `;
-
-    //On submit handler for search form
-    //input value is used to search for a specific fragment by id, which is based on the input value
-    const form = document.querySelector('#form');
-    form.addEventListener("submit", (event) => {
-      event.preventDefault();
-
-      const inputValue = document.getElementById('search-id').value;
-
-      //GET request to API_URL/v1/fragments/:id
-      fetch(`${process.env.API_URL}/v1/fragments/${inputValue}`, {
-        headers: user.authorizationHeaders()
-      })
-      .then(res => {
-        console.log(res.headers.get('Location'));
-        return res;
-      })
-      .then(async data => {
-        const text = await data.text();
-        console.log(data)
-        if(data.ok) {
-        fragmentDisplayContainer.innerHTML = `
-          <div style="border: 2px solid;">
-            <div style="display: flex; justify-content: space-between;">
-              <h3>Fragment found:</h3>
-            </div>
-            <ul>
-              <li>type: ${data.headers.get('Content-Type')}</li>
-              <li>size: ${data.headers.get('Content-Length')}</li>
-              <li>data: ${text}</li>
-            </ul>
-          </div>
-          `;
-        }
-        else {
-          const label = document.querySelector('#err-msg');
-          label.innerHTML = `
-            Fragment ID: ${inputValue} ${data.statusText}
-          `;
-        }
-      })
-      .catch(err => {
-        console.error(err);
-      })
-      form.reset();
     })
   }
 
