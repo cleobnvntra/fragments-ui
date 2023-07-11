@@ -1,5 +1,5 @@
 import { Auth, getUser } from "./auth";
-import { getUserFragments, createFragments } from './api';
+import { getUserFragments } from './api';
 
 async function init() {
   // Get our UI elements

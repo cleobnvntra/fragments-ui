@@ -3,12 +3,12 @@
   "private": true,
   "version": "0.0.1",
   "description": "Fragments UI testing web app",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "parcel src/index.html src/create-fragment.html",
     "build": "parcel build src/index.html",
-    "start": "npm run dev"
+    "start": "npm run dev",
+    "serve": "parcel src/index.html"
   },
   "repository": {
     "type": "git",
