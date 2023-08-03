@@ -12,12 +12,31 @@ async function init() {
     }
 
     const form = document.querySelector("#form")
+    const contentTypeEvent = document.querySelector("#content-type");
+    const txtRegex = /^text\//;
+
+    let contentType;
+    const inputContainer = document.querySelector("#input-container");
+    contentTypeEvent.addEventListener('change', () => {
+        contentType = document.querySelector("#content-type").value;
+        if (txtRegex.test(contentType) || contentType === 'application/json') {
+            inputContainer.innerHTML = `
+                <label for="new-fragment">Enter text:</label>
+                <input type="text" id="new-fragment" name="new-fragment">
+            `;
+        }
+        else {
+            inputContainer.innerHTML = `
+                <label for="new-fragment">Choose file:</label>
+                <input type="file" id="new-fragment" name="new-fragment">
+            `;
+        }
+    })
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
         const input = document.querySelector("#new-fragment").value;
-        const contentType = document.querySelector("#content-type").value;
         console.log(contentType)
 
         fetch(`${process.env.API_URL}/v1/fragments`, {
@@ -26,7 +45,7 @@ async function init() {
                 'Content-Type': contentType,
                 'Authorization': `Bearer ${user.idToken}`
             },
-            body: input
+            body: JSON.stringify(input)
         })
         .then(res => {
             console.log(res.headers.get('Location'));

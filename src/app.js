@@ -73,7 +73,8 @@ async function init() {
           html += `
               <li>
                 <span>${fragment}</span>
-                <button type="button" style="float: right" id="view-${fragment}">View</button>
+                <button type="button" style="float: right" id="viewinfo-${fragment}">View info</button>
+                <button type="button" style="float: right" id="viewdata-${fragment}">View data</button>
               </li><br>
           `;
         });
@@ -84,12 +85,37 @@ async function init() {
       }
       fragmentDisplayContainer.innerHTML = html;
 
-      //Onclick event listener for View button
+      //Onclick event listener for View data button
+      //When clicked, it sends a GET request to the server to retrieve a fragment's
+      //raw data based on the id parameter
+      fragments.forEach(fragment => {
+        const viewDataBtn = document.querySelector(`#viewdata-${fragment}`);
+        viewDataBtn.onclick = () => {
+          fetch(`${process.env.API_URL}/v1/fragments/${fragment}`, {
+            headers: user.authorizationHeaders()
+          })
+          .then(res => res.json())
+          .then(data => {
+            html = `
+              <div style="border: 2px solid;">
+                <h3>Fragment ${fragment}:</h3>
+                <ul>
+                  <li>${data}</li>
+                </ul>
+              </div>
+            `;
+
+            fragmentDisplayContainer.innerHTML = html;
+          })
+        }
+      })
+
+      //Onclick event listener for View info button
       //When clicked, it sends a GET request to the server to retrieve a fragment's
       //metadata based on the id parameter
       fragments.forEach(fragment => {
-        const viewBtn = document.querySelector(`#view-${fragment}`);
-        viewBtn.onclick = () => {
+        const viewInfoBtn = document.querySelector(`#viewinfo-${fragment}`);
+        viewInfoBtn.onclick = () => {
           fetch(`${process.env.API_URL}/v1/fragments/${fragment}/info`, {
             headers: user.authorizationHeaders()
           })
