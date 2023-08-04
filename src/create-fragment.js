@@ -36,8 +36,12 @@ async function init() {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        const input = document.querySelector("#new-fragment").value;
+        let input = document.querySelector("#new-fragment").value;
         console.log(contentType)
+
+        if (contentType === 'application/json') {
+            input = JSON.stringify(input);
+        }
 
         fetch(`${process.env.API_URL}/v1/fragments`, {
             method: 'POST',
@@ -45,11 +49,9 @@ async function init() {
                 'Content-Type': contentType,
                 'Authorization': `Bearer ${user.idToken}`
             },
-            body: JSON.stringify(input)
+            body: input
         })
-        .then(res => {
-            console.log(res.headers.get('Location'));
-            return res.json()})
+        .then(res => res.json())
         .then(data => {
             console.log(data);
         })
