@@ -41,7 +41,6 @@ async function init() {
   const createFragmentBtn = document.querySelector('#new-fragment');
   createFragmentBtn.onclick = async () => {
     window.location.href = 'create-fragment.html';
-    await createFragments();
   }
 
   //Button element for Fragment Ids button
@@ -94,18 +93,54 @@ async function init() {
           fetch(`${process.env.API_URL}/v1/fragments/${fragment}`, {
             headers: user.authorizationHeaders()
           })
-          .then(res => res.json())
           .then(data => {
+            const type = data.headers.get('Content-Type')
+
             html = `
               <div style="border: 2px solid;">
                 <h3>Fragment ${fragment}:</h3>
                 <ul>
-                  <li>${data}</li>
-                </ul>
-              </div>
+                  <li>type: ${type}</li>
             `;
 
-            fragmentDisplayContainer.innerHTML = html;
+            if (type.startsWith('image/')) {
+              data.blob().then((image) => {
+                const imgElement = document.createElement('img');
+                imgElement.src = URL.createObjectURL(image)
+  
+                html += `
+                    <img src="${imgElement.src}" alt="Image" />
+                  </ul>
+                </div>
+                `;
+                fragmentDisplayContainer.innerHTML = html;
+              });
+            }
+            else {
+              if (type.startsWith('text/')) {
+                data.text().then((text) => {
+                  html += `
+                      <li>${text}</li>
+                    </ul>
+                  </div>
+                  `;
+              fragmentDisplayContainer.innerHTML = html;
+                })
+              }
+              else {
+                data.json().then((json) => {
+                  html += `
+                      <li>${json.data}</li>
+                    </ul>
+                  </div>
+                  `;
+                  fragmentDisplayContainer.innerHTML = html;
+                });
+              }
+            }
+          })
+          .catch(err => {
+            console.log(err);
           })
         }
       })
@@ -125,11 +160,12 @@ async function init() {
             html = `
               <div style="border: 2px solid;">
                 <div style="display: flex; justify-content: space-between;">
-                  <h3>Fragment:</h3>
+                  <h3>Fragment</h3>
                   <div id="update-container">
                     <button type="button" id="back">Go Back</button>
-                    <button type="button" class="update-fragment" id="update-button">Edit</button>
-                    <button type="button" class="delete-fragment" id="delete-button">Del</button>
+                    <button type="button" id="update-button">Edit</button>
+                    <button type="button" id="convert-button">Convert</button>
+                    <button type="button" id="delete-button">Del</button>
                   </div>
                 </div>
                 <ul>
@@ -148,16 +184,25 @@ async function init() {
             //When clicked, displays a single input form for the user
             const editBtn = document.querySelector('#update-button');
             editBtn.onclick = () => {
-              //Trigger for removing active forms when another edit button is clicked
-    
               const container = document.querySelector('#update-container');
-              container.innerHTML = `
-              <form id="update-form">
-                <input type="text" id="update"></input>
-                <button type="submit" style="margin: 2px">Update</button>
-                <button type="reset" style="margin: 2px">Cancel</button>
-              </form>
-              `;
+              if (metadata.type.startsWith('image/')) {
+                container.innerHTML = `
+                <form id="update-form">
+                  <input type="file" id="update" accept="${metadata.type}" style="width: 300px"></input>
+                  <button type="submit" style="margin: 2px">Update</button>
+                  <button type="reset" style="margin: 2px">Cancel</button>
+                </form>
+                `;
+              }
+              else {
+                container.innerHTML = `
+                <form id="update-form">
+                  <input type="text" id="update" style="width: 300px"></input>
+                  <button type="submit" style="margin: 2px">Update</button>
+                  <button type="reset" style="margin: 2px">Cancel</button>
+                </form>
+                `;
+              }
     
               //Submit handler for the edit form
               //The submitted input value is sent as a PUT request
@@ -166,16 +211,36 @@ async function init() {
               form.addEventListener('submit', (event) => {
                 event.preventDefault();
     
-                const inputValue = document.querySelector('#update').value;
+                let input;
+                let data;
+                if(metadata.type.startsWith('image/')) {
+                  input = document.querySelector('#update');
+                  const file = input.files[0];
+                  
+                  if (file.type !== metadata.type) {
+                    alert('Cannot update to a different type!');
+                    return;
+                  }
+                  data = new Blob([file], {type: metadata.type})
+                }
+                else {
+                  input = document.querySelector('#update').value;
+                  if (metadata.type === 'application/json') {
+                    data = JSON.stringify(input);
+                  }
+                  else {
+                    data = input;
+                  }
+                }
     
                 //PUT request to API_URL/v1/fragments/:id
                 fetch(`${process.env.API_URL}/v1/fragments/${metadata.id}`, {
                   method: 'PUT',
                   headers: {
-                    'Content-Type': 'text/plain',
+                    'Content-Type': metadata.type,
                     'Authorization': `Bearer ${user.idToken}`
                   },
-                  body: inputValue
+                  body: data
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -186,6 +251,123 @@ async function init() {
                   console.error(err);
                 })
               });
+            }
+
+            //Onclick event listener for Convert button
+            //When clicked, opens an input of possible conversion types
+            //Converts the fragment to the selected type
+            const convertBtn = document.querySelector('#convert-button');
+            if (metadata.type === 'text/plain') {
+              convertBtn.disabled = true;
+            }
+
+            convertBtn.onclick = () => {
+              const container = document.querySelector('#update-container');
+              if (metadata.type.startsWith('image/')) {
+                container.innerHTML = `
+                  <form id="convert-form">
+                    <select id="convert-type">
+                      <option value="png">image/png</option>
+                      <option value="jpeg">image/jpeg</option>
+                      <option value="webp">image/webp</option>
+                      <option value="gif">image/gif</option>
+                    </select><br>
+                    <button type="submit" style="margin: 2px">Convert</button>
+                  </form>
+                `;
+              }
+              else {
+                if (metadata.type === 'text/markdown') {
+                  container.innerHTML = `
+                    <form id="convert-form">
+                      <select id="convert-type">
+                        <option value="md">text/markdown</option>
+                        <option value="html">text/html</option>
+                        <option value="txt">text/plain</option>
+                      </select><br>
+                      <button type="submit" style="margin: 2px">Convert</button>
+                    </form>
+                  `;
+                }
+                else if (metadata.type === 'text/html') {
+                  container.innerHTML = `
+                    <form id="convert-form">
+                      <select id="convert-type">
+                        <option value="html">text/html</option>
+                        <option value="txt">text/plain</option>
+                      </select><br>
+                      <button type="submit" style="margin: 2px">Convert</button>
+                    </form>
+                  `;
+                }
+                else if (metadata.type === 'application/json') {
+                  container.innerHTML = `
+                    <form id="convert-form">
+                      <select id="convert-type">
+                        <option value="json">application/json</option>
+                        <option value="txt">text/plain</option>
+                      </select><br>
+                      <button type="submit" style="margin: 2px">Convert</button>
+                    </form>
+                  `;
+                }
+              }
+
+              const form = document.querySelector('#convert-form');
+              form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const ext = document.querySelector('#convert-type').value;
+                fetch(`${process.env.API_URL}/v1/fragments/${metadata.id}.${ext}`, {
+                  method: 'GET',
+                  headers: user.authorizationHeaders()
+                })
+                .then(data => {
+                  const type = data.headers.get('Content-Type')
+                  html = `
+                    <div style="border: 2px solid;">
+                      <h3>Conversion success!</h3>
+                      <ul>
+                        <li>id: ${metadata.id}</li>
+                        <li>type: ${type}</li>
+                  `;
+      
+                  if (type.startsWith('image/')) {
+                    data.blob().then((image) => {
+                      const imgElement = document.createElement('img');
+                      imgElement.src = URL.createObjectURL(image)
+        
+                      html += `
+                          <img src="${imgElement.src}" alt="Image" />
+                        </ul>
+                      </div>
+                      `;
+                      fragmentDisplayContainer.innerHTML = html;
+                    });
+                  }
+                  else {
+                    if (type.startsWith('text/')) {
+                      data.text().then((text) => {
+                        html += `
+                            <li>${text}</li>
+                          </ul>
+                        </div>
+                        `;
+                        fragmentDisplayContainer.innerHTML = html;
+                      })
+                    }
+                    else {
+                      data.json().then((json) => {
+                        html += `
+                            <li>${json}</li>
+                          </ul>
+                        </div>
+                        `;
+                        fragmentDisplayContainer.innerHTML = html;
+                      });
+                    }
+                  }
+                })
+              })
             }
       
             //Onclick event listener for Del button

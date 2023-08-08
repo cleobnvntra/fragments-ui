@@ -15,8 +15,11 @@ async function init() {
     const contentTypeEvent = document.querySelector("#content-type");
     const txtRegex = /^text\//;
 
-    let contentType;
+    let contentType = document.querySelector("#content-type").value;
     const inputContainer = document.querySelector("#input-container");
+    //Event listener for drop down form
+    //Displays the appropriate input type depending on the content-type
+    //to be created.
     contentTypeEvent.addEventListener('change', () => {
         contentType = document.querySelector("#content-type").value;
         if (txtRegex.test(contentType) || contentType === 'application/json') {
@@ -36,11 +39,22 @@ async function init() {
     form.addEventListener('submit', (event) => {
         event.preventDefault();
 
-        let input = document.querySelector("#new-fragment").value;
-        console.log(contentType)
-
-        if (contentType === 'application/json') {
-            input = JSON.stringify(input);
+        let input;
+        let data;
+        if (contentType.startsWith('image/')) {
+            input = document.querySelector("#new-fragment");
+            const file = input.files[0];
+            data = new Blob([file], {type: 'image/png'});
+            
+        }
+        else {
+            input = document.querySelector("#new-fragment").value;
+            if (contentType === 'application/json') {
+                data = JSON.stringify(input);
+            }
+            else {
+                data = input;
+            }
         }
 
         fetch(`${process.env.API_URL}/v1/fragments`, {
@@ -49,7 +63,7 @@ async function init() {
                 'Content-Type': contentType,
                 'Authorization': `Bearer ${user.idToken}`
             },
-            body: input
+            body: data
         })
         .then(res => res.json())
         .then(data => {
