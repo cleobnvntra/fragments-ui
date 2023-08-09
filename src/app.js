@@ -140,7 +140,7 @@ async function init() {
             }
           })
           .catch(err => {
-            console.log(err);
+            console.error(err);
           })
         }
       })
@@ -416,7 +416,6 @@ async function init() {
     .then(res => res.json())
     .then(data => {
       const fragments = data.fragments;
-      console.log(fragments);
 
       let html = ``;
       if (fragments.length == 0) {
