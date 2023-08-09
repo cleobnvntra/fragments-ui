@@ -23,16 +23,17 @@ A web app UI that interacts with the fragments server which utilizes AWS service
 ```sh
 POST API_URL/v1/fragments
 ```
-An input field is provided to the user to create the fragment. The input type of the field is determined by the selected Content-Type. ex: A text/* or application/json type will display a text input type, while an image/* type will display a file input type.<br>
+An input field is provided to the user to create the fragment. The input type of the field is determined by the selected Content-Type.<br>
+ex: A text/* or application/json type will display a text input type, while an image/* type will display a file input type.<br>
 
 ![Alt text](./screenshots/create-types.PNG?raw=true)
 <br>
 
-<u>text input type for text/* content-type:</u>
+<u>text input type for text/* content-type:</u><br>
 ![Alt text](./screenshots/text-input.PNG?raw=true)
 <br>
 
-<u>file input type for image/* content-type:</u>
+<u>file input type for image/* content-type:</u><br>
 ![Alt text](./screenshots/file-input.PNG?raw=true)
 <br>
 
@@ -58,12 +59,24 @@ GET API_URL/v1/fragments/:id/info
 ```
 ![Alt text](./screenshots/view-info.PNG?raw=true)
 
+## Full Fragments
+- Retrieves the metadata of all the existing fragments of the user and displays it for the user. A GET request is made via fetch to the fragments server.
+```sh
+GET API_URL/v1/fragments?expand=1
+```
+![Alt text](./screenshots/get-expanded.PNG?raw=true)
+
 # 3. Updating
 ## Edit
 - Opens up an input type depending on the fragment's current type.<br>
 Fragments that have application/json or text/* types will open up a text input type, while image/* types will open up a file input type.
 
+<u>text input type for text/* content-type:</u><br>
 ![Alt text](./screenshots/edit-text.PNG?raw=true)
+
+<u>file input type for image/* content-type:</u><br>
+![Alt text](./screenshots/edit-file.PNG?raw=true)
+
 - On submit (Update), it sends a PUT request via fetch to the fragments server. A content-type check is made before sending the request. A user is <u><b>NOT</b></u> allowed to update the existing fragment into a different content-type.
 ```sh
 PUT API_URL/v1/fragments/:id
