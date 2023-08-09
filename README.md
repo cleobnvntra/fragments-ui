@@ -19,11 +19,7 @@ A web app UI that interacts with the fragments server which utilizes AWS service
 | WebP Image    | `image/webp`      |
 | GIF Image     | `image/gif`       |
 
-- When a user creates a new fragment, the app makes a POST request via fetch to the fragments server.
-```sh
-POST API_URL/v1/fragments
-```
-An input field is provided to the user to create the fragment. The input type of the field is determined by the selected Content-Type.<br>
+- An input field is provided to the user to create the fragment. The input type of the field is determined by the selected Content-Type.<br>
 ex: A text/* or application/json type will display a text input type, while an image/* type will display a file input type.<br>
 
 ![Alt text](./screenshots/create-types.PNG?raw=true)
@@ -36,6 +32,11 @@ ex: A text/* or application/json type will display a text input type, while an i
 <u>file input type for image/* content-type:</u><br>
 ![Alt text](./screenshots/file-input.PNG?raw=true)
 <br>
+
+- When a user creates a new fragment, the app makes a POST request via fetch to the fragments server.
+```sh
+POST API_URL/v1/fragments
+```
 
 # 2. Retrieval
 ## View Fragment Ids
