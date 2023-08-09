@@ -44,7 +44,12 @@ async function init() {
         if (contentType.startsWith('image/')) {
             input = document.querySelector("#new-fragment");
             const file = input.files[0];
-            data = new Blob([file], {type: 'image/png'});
+
+            if (file.type != contentType) {
+                alert('File must be of selected Content-Type: ' + contentType);
+                return;
+            }
+            data = new Blob([file], {type: contentType});
             
         }
         else {
@@ -75,7 +80,7 @@ async function init() {
         form.reset();
     })
 
-    form.reset();
+
 }
 
 addEventListener('DOMContentLoaded', init);
